@@ -8,22 +8,25 @@ var sourcemaps = require("gulp-sourcemaps");
 var paths = {
   dev: {
     src: "./src",
-    css: "./src/scss/*.scss",
+    css: "./src/css/*.scss",
     js: "./src/js/*.js",
-    html: ["./src/**/*.html", "!./src/include/*.html"],
+    html: ["./src/**/*.html", "!./src/**/include/*"],
     resource: [
       "./src/**/*",
       "!./src/**/*.js",
       "!./src/**/*.scss",
       "!./src/**/*.html",
+      "!./src/**/include",
+      "!./src/**/include/**/",
+      "!./src/**/include/**/*.html",
     ],
   },
   dist: {
-    src: "./dist",
-    css: "./dist/css",
-    js: "./dist/js",
-    html: "./dist",
-    resource: "./dist",
+    src: "./docs",
+    css: "./docs/css",
+    js: "./docs/js",
+    html: "./docs",
+    resource: "./docs",
   },
 };
 
@@ -34,6 +37,7 @@ var scssOptions = {
   precision: 6,
   sourceComments: false,
 };
+
 function setHtml() {
   return gulp
     .src(paths.dev.html)
@@ -41,7 +45,7 @@ function setHtml() {
       fileinclude({
         prefix: "@@",
         basepath: "@file",
-      })
+      }),
     )
     .pipe(gulp.dest(paths.dist.html))
     .pipe(browserSync.reload({ stream: true }));
@@ -86,7 +90,9 @@ function brwSync() {
   });
 }
 function setClean() {
-  return gulp.src(paths.dist.src, { read: false }).pipe(clean());
+  return gulp
+    .src(paths.dist.src, { read: false, allowEmpty: true })
+    .pipe(clean());
 }
 
 gulp.task(
@@ -94,6 +100,6 @@ gulp.task(
   gulp.parallel(
     brwSync,
     gulp.series(setClean, setHtml, setCss, setJs, setResource),
-    watchFiles
-  )
+    watchFiles,
+  ),
 );
